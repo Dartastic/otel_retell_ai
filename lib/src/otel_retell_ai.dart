@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_retell_ai_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_retell_ai';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class RetellAiResult {
+  /// Creates a result.
   const RetellAiResult({
     this.callId,
     this.agentId,
@@ -79,8 +80,13 @@ class RetellAiResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class RetellAiCallResult<T> {
+  /// Creates a call result.
   const RetellAiCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final RetellAiResult? result;
 }
@@ -106,44 +112,44 @@ Future<T> tracedRetellAi<T>({
   final span = _tracer().startSpan(
     'retell_ai $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.callId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.call.id',
           r.result!.callId!,
         ));
       }
       if (r.result!.agentId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.agent.id',
           r.result!.agentId!,
         ));
       }
       if (r.result!.agentVersion != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.agent.version',
           r.result!.agentVersion!,
         ));
       }
       if (r.result!.llmWebsocketUrl != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.llm.websocket_url',
           r.result!.llmWebsocketUrl!,
         ));
       }
       if (r.result!.callType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.call.type',
           r.result!.callType!,
         ));
       }
       if (r.result!.callStatus != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.call.status',
           r.result!.callStatus!,
         ));
@@ -152,7 +158,7 @@ Future<T> tracedRetellAi<T>({
         }
       }
       if (r.result!.disconnectionReason != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.disconnection.reason',
           r.result!.disconnectionReason!,
         ));
@@ -165,49 +171,49 @@ Future<T> tracedRetellAi<T>({
         }
       }
       if (r.result!.durationMs != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'retell_ai.duration_ms',
           r.result!.durationMs!,
         ));
       }
       if (r.result!.userSentiment != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'retell_ai.user.sentiment',
           r.result!.userSentiment!,
         ));
       }
       if (r.result!.callSuccessful != null) {
-        extras.add(OTel.attributeBool(
+        extras.add(OTelAPI.attributeBool(
           'retell_ai.call.successful',
           r.result!.callSuccessful!,
         ));
       }
       if (r.result!.endCallAfterSilenceMs != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'retell_ai.silence.threshold_ms',
           r.result!.endCallAfterSilenceMs!,
         ));
       }
       if (r.result!.combinedCost != null) {
-        extras.add(OTel.attributeDouble(
+        extras.add(OTelAPI.attributeDouble(
           'retell_ai.cost.combined_usd',
           r.result!.combinedCost!,
         ));
       }
       if (r.result!.retellLlmLatencyP50 != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'retell_ai.llm.latency_p50_ms',
           r.result!.retellLlmLatencyP50!,
         ));
       }
       if (r.result!.e2eLatencyP50 != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'retell_ai.e2e.latency_p50_ms',
           r.result!.e2eLatencyP50!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -218,13 +224,13 @@ Future<T> tracedRetellAi<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
